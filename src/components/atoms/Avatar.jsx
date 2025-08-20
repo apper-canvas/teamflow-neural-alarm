@@ -1,6 +1,6 @@
-import React from "react";
-import { cn } from "@/utils/cn";
+import React, { forwardRef, useState } from "react";
 import ApperIcon from "@/components/ApperIcon";
+import { cn } from "@/utils/cn";
 
 const Avatar = React.forwardRef(({ 
   className, 
@@ -10,6 +10,7 @@ const Avatar = React.forwardRef(({
   size = "default",
   ...props 
 }, ref) => {
+  const [imageError, setImageError] = useState(false);
   const sizes = {
     sm: "h-8 w-8 text-xs",
     default: "h-10 w-10 text-sm",
@@ -37,11 +38,13 @@ const Avatar = React.forwardRef(({
       ref={ref}
       {...props}
     >
-      {src ? (
+{src && !imageError ? (
         <img
           src={src}
           alt={alt || name}
           className="h-full w-full rounded-full object-cover"
+          onLoad={() => setImageError(false)}
+          onError={() => setImageError(true)}
         />
       ) : (
         <span className="font-semibold">
