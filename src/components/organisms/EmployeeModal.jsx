@@ -31,13 +31,31 @@ const EmployeeModal = ({ employee, isOpen, onClose, onSave, mode = "view" }) => 
     }
   });
 
-  const [activeTab, setActiveTab] = useState("personal");
+const [activeTab, setActiveTab] = useState("personal");
+
+  // Helper function to validate dates
+  const isValidDate = (dateValue) => {
+    if (!dateValue) return false;
+    const date = new Date(dateValue);
+    return !isNaN(date.getTime());
+  };
 
   useEffect(() => {
     if (employee) {
+      let formattedHireDate = "";
+      
+      try {
+        if (employee.hireDate && isValidDate(employee.hireDate)) {
+          formattedHireDate = format(new Date(employee.hireDate), "yyyy-MM-dd");
+        }
+      } catch (error) {
+        console.warn('Invalid hire date format:', employee.hireDate);
+        formattedHireDate = "";
+      }
+
       setFormData({
         ...employee,
-        hireDate: format(new Date(employee.hireDate), "yyyy-MM-dd"),
+        hireDate: formattedHireDate,
         address: employee.address || { street: "", city: "", state: "", zipCode: "" },
         emergencyContact: employee.emergencyContact || { name: "", relationship: "", phone: "" }
       });
@@ -62,12 +80,28 @@ const EmployeeModal = ({ employee, isOpen, onClose, onSave, mode = "view" }) => 
     }
   };
 
-  const handleSave = () => {
+const handleSave = () => {
+    let processedHireDate;
+    
+    try {
+      if (formData.hireDate && isValidDate(formData.hireDate)) {
+        processedHireDate = new Date(formData.hireDate).toISOString();
+      } else {
+        // For new employees without a hire date, default to current date
+        processedHireDate = new Date().toISOString();
+        console.warn('No valid hire date provided, using current date');
+      }
+    } catch (error) {
+      console.error('Date processing error:', error);
+      processedHireDate = new Date().toISOString();
+    }
+
     const dataToSave = {
       ...formData,
-      hireDate: new Date(formData.hireDate).toISOString(),
+      hireDate: processedHireDate,
       salary: parseFloat(formData.salary) || 0
     };
+    
     onSave(dataToSave);
   };
 
