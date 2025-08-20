@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { cn } from "@/utils/cn";
+import ApperIcon from "@/components/ApperIcon";
 import Sidebar from "@/components/organisms/Sidebar";
+import { cn } from "@/utils/cn";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
