@@ -57,8 +57,14 @@ const LeaveRequests = () => {
       filtered = filtered.filter(req => req.status === statusFilter);
     }
 
-    // Sort by request date (newest first)
-    filtered.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+// Sort by request date (newest first)
+    filtered.sort((a, b) => {
+      const dateA = a.request_date_c ? new Date(a.request_date_c) : new Date(0);
+      const dateB = b.request_date_c ? new Date(b.request_date_c) : new Date(0);
+      if (isNaN(dateA.getTime())) dateA.setTime(0);
+      if (isNaN(dateB.getTime())) dateB.setTime(0);
+      return dateB - dateA;
+    });
 
     setFilteredRequests(filtered);
   };
@@ -208,9 +214,11 @@ const LeaveRequests = () => {
                 {filteredRequests.map((request) => {
                   const employee = employees.find(emp => emp.Id.toString() === request.employeeId);
                   if (!employee) return null;
-
-                  const duration = differenceInDays(new Date(request.endDate), new Date(request.startDate)) + 1;
-
+const startDate = request.start_date_c ? new Date(request.start_date_c) : null;
+                  const endDate = request.end_date_c ? new Date(request.end_date_c) : null;
+                  const duration = (startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) 
+                    ? differenceInDays(endDate, startDate) + 1 
+                    : 1;
                   return (
                     <div key={request.Id} className="p-6 hover:bg-secondary-50 transition-colors">
                       <div className="flex items-center justify-between">
@@ -227,8 +235,17 @@ const LeaveRequests = () => {
                             <p className="text-sm text-secondary-600">{employee.role} • {employee.department}</p>
                             <div className="flex items-center space-x-4 mt-2">
                               <div className="flex items-center text-sm text-secondary-600">
-                                <ApperIcon name="Calendar" className="w-4 h-4 mr-1" />
-                                {format(new Date(request.startDate), "MMM dd")} - {format(new Date(request.endDate), "MMM dd, yyyy")}
+<ApperIcon name="Calendar" className="w-4 h-4 mr-1" />
+                                {request.start_date_c && request.end_date_c ? (
+                                  (() => {
+                                    const startDate = new Date(request.start_date_c);
+                                    const endDate = new Date(request.end_date_c);
+                                    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                                      return `${format(startDate, "MMM dd")} - ${format(endDate, "MMM dd, yyyy")}`;
+                                    }
+                                    return "Invalid dates";
+                                  })()
+                                ) : "No dates specified"}
                               </div>
                               <div className="flex items-center text-sm text-secondary-600">
                                 <ApperIcon name="Clock" className="w-4 h-4 mr-1" />

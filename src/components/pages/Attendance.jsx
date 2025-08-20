@@ -44,16 +44,21 @@ const Attendance = () => {
     }
   };
 
-  const getTodayAttendance = () => {
-    return attendance.filter(att => isToday(new Date(att.date)));
+const getTodayAttendance = () => {
+    return attendance.filter(att => {
+      if (!att.date_c || att.date_c === '') return false;
+      const date = new Date(att.date_c);
+      return !isNaN(date.getTime()) && isToday(date);
+    });
   };
 
   const getMonthlyStats = () => {
     const monthStart = startOfMonth(selectedDate);
     const monthEnd = endOfMonth(selectedDate);
-    const monthlyAttendance = attendance.filter(att => {
-      const date = new Date(att.date);
-      return date >= monthStart && date <= monthEnd;
+const monthlyAttendance = attendance.filter(att => {
+      if (!att.date_c || att.date_c === '') return false;
+      const date = new Date(att.date_c);
+      return !isNaN(date.getTime()) && date >= monthStart && date <= monthEnd;
     });
 
     const stats = {
@@ -310,10 +315,11 @@ const Attendance = () => {
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
-                    {Object.values(attendanceByEmployee).map(({ employee, records }) => {
+{Object.values(attendanceByEmployee).map(({ employee, records }) => {
                       const monthlyRecords = records.filter(record => {
-                        const date = new Date(record.date);
-                        return date >= startOfMonth(selectedDate) && date <= endOfMonth(selectedDate);
+                        if (!record.date_c || record.date_c === '') return false;
+                        const date = new Date(record.date_c);
+                        return !isNaN(date.getTime()) && date >= startOfMonth(selectedDate) && date <= endOfMonth(selectedDate);
                       });
 
                       const presentDays = monthlyRecords.filter(r => r.status === "Present").length;
